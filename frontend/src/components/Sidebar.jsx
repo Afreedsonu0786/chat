@@ -75,15 +75,16 @@ const Sidebar = () => {
               />
             </form>
           )}
-          {otherUser?.map((user) => (
-            <div className="w-12 h-12 rounded-full border-4 border-white overflow-hidden shadow-xl mt-5">
-              <img
-                src={user.image || dp}
-                alt="Profile"
-                className="w-full h-full object-cover"
-              />
-            </div>
-          ))}
+          {!search &&
+            otherUser?.map((user) => (
+              <div className="w-12 h-12 rounded-full border-4 border-white overflow-hidden shadow-xl mt-5">
+                <img
+                  src={user.image || dp}
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            ))}
         </div>
       </div>
     </div>
