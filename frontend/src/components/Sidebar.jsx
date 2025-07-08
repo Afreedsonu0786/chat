@@ -37,9 +37,9 @@ const Sidebar = () => {
     <div
       className={`${
         selectedUser ? "hidden" : "flex"
-      } lg:flex w-full lg:w-[30%] h-screen bg-gradient-to-b from-cyan-400 to-cyan-200 shadow-xl flex-col relative transition-all duration-300`}
+      } w-full lg:flex lg:w-[30%] h-screen bg-gradient-to-b from-cyan-400 to-cyan-200 shadow-xl flex-col relative transition-all duration-300`}
     >
-      {/* Logout */}
+      {/* Logout Button */}
       <div
         className="absolute bottom-6 left-6 w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-md cursor-pointer hover:bg-red-100 transition"
         onClick={handleLogOut}
@@ -49,15 +49,15 @@ const Sidebar = () => {
 
       {/* Header */}
       <div className="w-full h-[270px] rounded-b-[60px] bg-cyan-500 flex flex-col gap-6 justify-center px-6 py-6 shadow-md">
-        <h1 className="text-white font-extrabold text-3xl tracking-wide">
+        <h1 className="text-white font-extrabold text-2xl lg:text-3xl tracking-wide">
           Chat Friendly
         </h1>
 
         <div className="flex justify-between items-center">
-          <h2 className="text-white font-semibold text-2xl">
+          <h2 className="text-white font-semibold text-xl lg:text-2xl">
             Hi, {userData?.name || "user"}
           </h2>
-          <div className="w-16 h-16 rounded-full border-4 border-white overflow-hidden shadow-lg">
+          <div className="w-14 h-14 lg:w-16 lg:h-16 rounded-full border-4 border-white overflow-hidden shadow-lg">
             <img
               src={userData?.image || dp}
               alt="Profile"
@@ -68,9 +68,9 @@ const Sidebar = () => {
         </div>
 
         {/* Search or mini avatars */}
-        <div className="flex items-center gap-3 relative mt-3">
+        <div className="flex items-center gap-3 relative mt-3 flex-wrap">
           {search ? (
-            <form className="flex-grow bg-white rounded-full shadow px-4 py-2 flex items-center gap-3">
+            <form className="flex-grow bg-white rounded-full shadow px-4 py-2 flex items-center gap-3 w-full">
               <IoMdSearch className="text-cyan-600 text-xl" />
               <input
                 className="w-full text-base outline-none placeholder:text-gray-400"
@@ -84,18 +84,20 @@ const Sidebar = () => {
             </form>
           ) : (
             <>
-              {otherUser?.map((user, i) => (
-                <div
-                  key={i}
-                  className="w-10 h-10 rounded-full border-2 border-white overflow-hidden shadow-md mt-1"
-                >
-                  <img
-                    src={user.image || dp}
-                    alt="Profile"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              ))}
+              <div className="flex gap-2 overflow-x-auto max-w-full pr-2">
+                {otherUser?.slice(0, 8).map((user, i) => (
+                  <div
+                    key={i}
+                    className="w-10 h-10 rounded-full border-2 border-white overflow-hidden shadow-md mt-1 shrink-0"
+                  >
+                    <img
+                      src={user.image || dp}
+                      alt="Profile"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ))}
+              </div>
               <div
                 className="ml-auto w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg cursor-pointer hover:bg-cyan-100 transition"
                 onClick={() => setSearch(true)}
@@ -108,7 +110,7 @@ const Sidebar = () => {
       </div>
 
       {/* Other Users */}
-      <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4">
+      <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4 scrollbar-thin scrollbar-thumb-cyan-300">
         {otherUser?.map((user, i) => (
           <div
             key={i}

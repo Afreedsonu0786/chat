@@ -9,9 +9,9 @@ export const sendMessage = async (req, res) => {
     const { message } = req.body;
     let image;
     if (req.file) {
-      image = uploadOnCloudinary(req.file.path);
+      image = await uploadOnCloudinary(req.file.path);
     }
-    const conversation = await Conversation.findOne({
+    let conversation = await Conversation.findOne({
       participants: { $all: [sender, receiver] },
     });
     const newMessage = await Message.create({
@@ -44,7 +44,7 @@ export const getMessages = async (req, res) => {
       participants: { $all: [sender, receiver] },
     }).populate("messages");
     if (!conversation) {
-      return res.status(400).json({ message: "Convo is not found" });
+      return res.status(200).json([]);
     }
     return res.status(200).json(conversation?.messages);
   } catch (error) {
