@@ -1,17 +1,34 @@
 import React from "react";
 import dp from "../assets/dp.webp";
+import { useSelector } from "react-redux";
 
-const RecieverMessage = ({ image, message }) => {
+const ReceiverMessage = ({ image, message }) => {
+  const { selectedUser } = useSelector((state) => state.user);
+
   return (
-    <div
-      className="w-fit max-w-125 bg-gray-600 py-3 px-3 text-white font-medium  rounded-tr-none rounded-2xl relative left-0 mt-auto
-     shadow-sm shadow-gray-400 mb-2 gap-2.5 flex flex-col
-     "
-    >
-      {image && <img src={image} alt="" className="w-[150px] rounded-lg" />}
-      {message && <span>{message}</span>}
+    <div className="flex items-start gap-2 mb-3">
+      {/* Avatar */}
+      <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-full overflow-hidden shadow-md border-2 border-white">
+        <img
+          src={selectedUser?.image || dp}
+          alt="Receiver"
+          className="w-full h-full object-cover"
+        />
+      </div>
+
+      {/* Message bubble */}
+      <div className="bg-gray-700 text-white px-4 py-2 rounded-2xl rounded-tl-none max-w-xs md:max-w-sm shadow-md">
+        {image && (
+          <img
+            src={image}
+            alt="Message"
+            className="mb-2 rounded-md max-w-[200px]"
+          />
+        )}
+        {message && <span className="block">{message}</span>}
+      </div>
     </div>
   );
 };
 
-export default RecieverMessage;
+export default ReceiverMessage;

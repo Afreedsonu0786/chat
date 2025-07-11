@@ -13,7 +13,7 @@ import {
 import { useNavigate } from "react-router-dom";
 
 const Sidebar = () => {
-  const { userData, otherUser, selectedUser } = useSelector(
+  const { userData, otherUser, selectedUser, onlineUsers } = useSelector(
     (state) => state.user
   );
   const [search, setSearch] = useState(false);
@@ -85,18 +85,27 @@ const Sidebar = () => {
           ) : (
             <>
               <div className="flex gap-2 overflow-x-auto max-w-full pr-2">
-                {otherUser?.slice(0, 8).map((user, i) => (
-                  <div
-                    key={i}
-                    className="w-10 h-10 rounded-full border-2 border-white overflow-hidden shadow-md mt-1 shrink-0"
-                  >
-                    <img
-                      src={user.image || dp}
-                      alt="Profile"
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                ))}
+                {otherUser?.slice(0, 8).map(
+                  (user, i) =>
+                    onlineUsers?.includes(user._id) && (
+                      <div
+                        className="relative rounded-full cursor-pointer"
+                        onClick={() => dispatch(setSelectedUser(user))}
+                      >
+                        <div
+                          key={i}
+                          className="w-14 h-14 rounded-full border-2 border-white overflow-hidden shadow-md mt-1 shrink-0"
+                        >
+                          <img
+                            src={user.image || dp}
+                            alt="Profile"
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <span className="w-3 h-3 bg-green-400 rounded-full absolute bottom-1.5 right-[-1px] shadow-md"></span>
+                      </div>
+                    )
+                )}
               </div>
               <div
                 className="ml-auto w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg cursor-pointer hover:bg-cyan-100 transition"

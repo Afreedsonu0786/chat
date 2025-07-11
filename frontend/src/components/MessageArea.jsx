@@ -13,7 +13,7 @@ import { serverUrl } from "../main";
 import { setMessages } from "../redux/messageSlice";
 
 const MessageArea = () => {
-  const { selectedUser, userData } = useSelector((state) => state.user);
+  const { selectedUser, userData, socket } = useSelector((state) => state.user);
   const { messages } = useSelector((state) => state.message);
   const dispatch = useDispatch();
 
@@ -23,28 +23,26 @@ const MessageArea = () => {
   const [backndImage, setBackndImage] = useState(null);
   const image = useRef();
   const scrollRef = useRef(null);
-
-  // Scroll to bottom when messages update
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [messages]);
+  const messagesEndRef = useRef(null);
 
   const handleImage = (e) => {
     const file = e.target.files[0];
+    if (!file) return;
     setBackndImage(file);
     setFrontendImage(URL.createObjectURL(file));
   };
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
+    if (input.trim().length === 0 && !backndImage) return;
+
     try {
       const formData = new FormData();
       formData.append("message", input);
       if (backndImage) {
         formData.append("image", backndImage);
       }
+
       const result = await axios.post(
         `${serverUrl}/api/v1/message/send/${selectedUser._id}`,
         formData,
@@ -52,6 +50,7 @@ const MessageArea = () => {
           withCredentials: true,
         }
       );
+
       dispatch(setMessages([...messages, result.data]));
       setInput("");
       setFrontendImage(null);
@@ -65,6 +64,21 @@ const MessageArea = () => {
     setInput((prevInput) => prevInput + emojiData.emoji);
     setEmojiPicker(false);
   };
+
+  useEffect(() => {
+    socket.on("newMsg", (msg) => {
+      dispatch(setMessages([...messages, msg]));
+    });
+
+    return () => {
+      socket.off("newMsg");
+    };
+  }, [messages]);
+
+  // Auto-scroll to bottom on messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   if (!selectedUser) {
     return (
@@ -109,7 +123,7 @@ const MessageArea = () => {
       >
         {messages &&
           messages
-            ?.filter(
+            .filter(
               (msg) =>
                 (msg.sender === userData._id &&
                   msg.receiver === selectedUser._id) ||
@@ -131,6 +145,8 @@ const MessageArea = () => {
                 />
               )
             )}
+        {/* Scroll target */}
+        <div ref={messagesEndRef} />
       </div>
 
       {/* Emoji Picker */}
@@ -176,9 +192,11 @@ const MessageArea = () => {
           <div onClick={() => image.current.click()}>
             <FaImages className="w-5 h-5 text-gray-600 cursor-pointer hover:text-cyan-500" />
           </div>
-          <button type="submit">
-            <IoMdSend className="w-6 h-6 text-cyan-500 cursor-pointer hover:scale-110 transition" />
-          </button>
+          {(input.trim().length > 0 || backndImage) && (
+            <button type="submit">
+              <IoMdSend className="w-6 h-6 text-cyan-500 cursor-pointer hover:scale-110 transition" />
+            </button>
+          )}
         </form>
       </div>
     </div>
