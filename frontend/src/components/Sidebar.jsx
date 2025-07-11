@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import dp from "../assets/dp.webp";
 import { IoMdSearch, IoMdLogOut } from "react-icons/io";
@@ -7,24 +7,23 @@ import axios from "axios";
 import { serverUrl } from "../main";
 import {
   setOtherUsers,
+  setSearchData,
   setSelectedUser,
   setUserData,
 } from "../redux/userSlice";
 import { useNavigate } from "react-router-dom";
 
 const Sidebar = () => {
-  const { userData, otherUser, selectedUser, onlineUsers } = useSelector(
-    (state) => state.user
-  );
+  const { userData, otherUser, selectedUser, onlineUsers, searchData } =
+    useSelector((state) => state.user);
   const [search, setSearch] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [input, setInput] = useState("");
 
   const handleLogOut = async () => {
     try {
-      await axios.get(`${serverUrl}/api/v1/logout`, {
-        withCredentials: true,
-      });
+      await axios.get(`${serverUrl}/api/v1/logout`, { withCredentials: true });
       dispatch(setUserData(null));
       dispatch(setOtherUsers(null));
       navigate("/login");
@@ -33,11 +32,27 @@ const Sidebar = () => {
     }
   };
 
+  const handleSearch = async () => {
+    try {
+      const result = await axios.get(
+        `${serverUrl}/api/v1/user/search?query=${input}`,
+        { withCredentials: true }
+      );
+      dispatch(setSearchData(result.data));
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    if (input.trim()) handleSearch();
+  }, [input]);
+
   return (
     <div
       className={`${
         selectedUser ? "hidden" : "flex"
-      } w-full lg:flex lg:w-[30%] h-screen bg-gradient-to-b from-cyan-400 to-cyan-200 shadow-xl flex-col relative transition-all duration-300`}
+      } w-full lg:flex lg:w-[30%] h-screen bg-gradient-to-b from-cyan-400 to-cyan-200 shadow-xl flex-col transition-all duration-300`}
     >
       {/* Logout Button */}
       <div
@@ -49,7 +64,7 @@ const Sidebar = () => {
 
       {/* Header */}
       <div className="w-full h-[270px] rounded-b-[60px] bg-cyan-500 flex flex-col gap-6 justify-center px-6 py-6 shadow-md">
-        <h1 className="text-white font-extrabold text-2xl lg:text-3xl tracking-wide">
+        <h1 className="text-white font-extrabold text-2xl lg:text-3xl">
           Chat Friendly
         </h1>
 
@@ -67,19 +82,25 @@ const Sidebar = () => {
           </div>
         </div>
 
-        {/* Search or mini avatars */}
-        <div className="flex items-center gap-3 relative mt-3 flex-wrap">
+        {/* Search or Online Avatars */}
+        <div className="flex items-center gap-3 relative mt-3">
           {search ? (
-            <form className="flex-grow bg-white rounded-full shadow px-4 py-2 flex items-center gap-3 w-full">
+            <form className="w-full bg-white rounded-full shadow px-4 py-2 flex items-center gap-3">
               <IoMdSearch className="text-cyan-600 text-xl" />
               <input
-                className="w-full text-base outline-none placeholder:text-gray-400"
+                className="flex-grow text-base outline-none placeholder:text-gray-400"
                 type="text"
                 placeholder="Search Users..."
+                onChange={(e) => setInput(e.target.value)}
+                value={input}
               />
               <RxCross2
                 className="text-gray-500 text-xl cursor-pointer hover:text-red-500"
-                onClick={() => setSearch(false)}
+                onClick={() => {
+                  setSearch(false);
+                  setInput("");
+                  dispatch(setSearchData(null));
+                }}
               />
             </form>
           ) : (
@@ -89,13 +110,11 @@ const Sidebar = () => {
                   (user, i) =>
                     onlineUsers?.includes(user._id) && (
                       <div
+                        key={i}
                         className="relative rounded-full cursor-pointer"
                         onClick={() => dispatch(setSelectedUser(user))}
                       >
-                        <div
-                          key={i}
-                          className="w-14 h-14 rounded-full border-2 border-white overflow-hidden shadow-md mt-1 shrink-0"
-                        >
+                        <div className="w-14 h-14 rounded-full border-2 border-white overflow-hidden shadow-md shrink-0">
                           <img
                             src={user.image || dp}
                             alt="Profile"
@@ -118,9 +137,9 @@ const Sidebar = () => {
         </div>
       </div>
 
-      {/* Other Users */}
+      {/* User List */}
       <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4 scrollbar-thin scrollbar-thumb-cyan-300">
-        {otherUser?.map((user, i) => (
+        {(search ? searchData : otherUser)?.map((user, i) => (
           <div
             key={i}
             className="flex items-center gap-4 bg-white rounded-full p-3 pr-5 shadow hover:bg-cyan-50 transition cursor-pointer"
